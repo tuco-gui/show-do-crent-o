@@ -2,25 +2,69 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ranking — Crentão Pro</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ranking • Show do Crentão</title>
   <style>
-    :root{--pad:clamp(16px,3vw,28px);--rad:14px;--shadow:0 12px 40px rgba(0,0,0,.35)}
-    *{box-sizing:border-box} html,body{height:100%;margin:0;background:#0a2a57;color:#fff;font-family:system-ui,Segoe UI,Roboto}
-    .container{max-width:900px;margin:0 auto;padding:24px var(--pad)}
-    .card{background:#0e2860;border:1px solid rgba(255,255,255,.08);border-radius:var(--rad);box-shadow:var(--shadow);padding:22px}
-    .item{display:grid;grid-template-columns:64px 1fr 140px 120px;gap:12px;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);padding:12px 0}
-    .pos{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:#112b66;font-weight:800}
+    :root{ --bg:#000; --panel:#0b0f0f; --text:#fff; --muted:#a9b5b3; --outline:1px solid rgba(255,255,255,.08) }
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto}
+    main{max-width:900px;margin:32px auto;padding:0 20px}
+    .card{background:rgba(12,15,15,.78);border:var(--outline);border-radius:14px;padding:18px}
+    h1{margin:0 0 12px} .muted{color:var(--muted);margin:0 0 16px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
+    th{font-size:14px;color:#cfe6e1}
+    a.btn{display:inline-block;margin:16px 0 0;padding:10px 16px;border-radius:999px;background:#121515;border:1px solid rgba(255,255,255,.1);color:#eaf6f3;text-decoration:none}
   </style>
 </head>
 <body>
-  <div class="container">
+  <main>
     <div class="card">
       <h1>Ranking</h1>
-      <div id="list"></div>
-      <div style="margin-top:12px"><a href="/" class="btn">Voltar</a></div>
+      <p class="muted">Maiores pontuações registradas.</p>
+      <table><thead>
+        <tr><th>#</th><th>Jogador</th><th>Pontos</th><th>Talentos</th><th>Quando</th></tr>
+      </thead><tbody id="rows"><tr><td colspan="5">Carregando…</td></tr></tbody></table>
+      <a href="index.html" class="btn">← Voltar</a>
     </div>
-  </div>
-  <script type="module" src="/src/ranking.js"></script>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL  = 'https://ihajmegcdgwchxslnaep.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloYWptZWdjZGd3Y2h4c2xuYWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0OTQzMTgsImV4cCI6MjA3MjA3MDMxOH0.WM36lA9n0PU9qd-DKdrWVB_UzGVXpsfJ984oHiXDU8Y';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    (async function load(){
+      const tbody = document.getElementById('rows');
+      try{
+        let { data, error } = await sb
+          .from('ranking')
+          .select('nome,pontos,tesouro,quando')
+          .order('tesouro', { ascending:false })
+          .limit(100);
+
+        if(error || !data){
+          const r2 = await sb.from('best_score')
+            .select('nome,pontos,tesouro,atualizado_em')
+            .order('tesouro', { ascending:false })
+            .limit(100);
+          if(!r2.error) data = (r2.data||[]).map(r=>({nome:r.nome,pontos:r.pontos,tesouro:r.tesouro,quando:r.atualizado_em}));
+        }
+
+        if(!data || !data.length){ tbody.innerHTML = '<tr><td colspan="5">Sem resultados ainda.</td></tr>'; return; }
+        tbody.innerHTML = data.map((r,i)=>`
+          <tr>
+            <td>${i+1}</td>
+            <td>${r.nome || 'Convidado'}</td>
+            <td>${r.pontos ?? 0}</td>
+            <td>${(r.tesouro ?? 0).toLocaleString('pt-BR')}</td>
+            <td>${r.quando ? new Date(r.quando).toLocaleString('pt-BR') : '-'}</td>
+          </tr>
+        `).join('');
+      }catch(e){
+        tbody.innerHTML = '<tr><td colspan="5">Erro ao carregar ranking.</td></tr>';
+      }
+    })();
+  </script>
 </body>
 </html>
