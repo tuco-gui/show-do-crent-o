@@ -12,8 +12,9 @@
       --radius:16px; --shadow:0 12px 40px rgba(0,0,0,.45);
       --pad: clamp(16px, 3vw, 28px); --maxw: 1040px;
       --stroke: rgba(255,255,255,.08);
-      --option-bg:#0f1413; --option-hover:#121a18; --option-selected:#0f3329; /* verde escuro */
+      --option-bg:#0f1413; --option-hover:#121a18; --option-selected:#0f3329;
       --option-ring:#1fddac;
+      --correct:#22c55e; --wrong:#ef4444; --neutral:#94a3b8;
     }
     *{box-sizing:border-box}
     html,body{height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
@@ -30,7 +31,7 @@
     .brand img{height:22px; opacity:.95}
     .title-logo{height:24px; opacity:.96; filter: drop-shadow(0 2px 8px rgba(0,0,0,.45)); display:none;}
 
-    /* HERO (capa) */
+    /* HERO */
     #hero{
       position:relative; min-height:100svh;
       display:flex; align-items:flex-end; justify-content:center;
@@ -50,6 +51,7 @@
       display:flex; gap:14px; flex-wrap:wrap; justify-content:center; z-index:2;
     }
 
+    /* Botões */
     .btn{
       appearance:none; border:0; border-radius:18px; padding:16px 24px;
       font-weight:800; letter-spacing:.02em; text-transform:uppercase; cursor:pointer;
@@ -62,6 +64,7 @@
     .btn.danger{ background:linear-gradient(180deg, var(--red) 0%, var(--red-700) 100%); color:#fff; }
     .btn.full{ flex:1 1 320px; }
 
+    /* Cards/painéis */
     main{display:grid; gap:28px; padding:24px var(--pad) 48px; max-width:var(--maxw); margin:0 auto}
     .card{
       background:rgba(12,15,15,.82); backdrop-filter: blur(6px);
@@ -70,7 +73,8 @@
     }
     h2{margin:0 0 6px; font-size:22px}
     .sub{margin:0 0 14px; font-size:14px; color:#a7b1af}
-    label{display:block; font-size:14px; margin:14px 0 6px; color:#cdd5d3}
+    .row{display:flex; gap:12px; flex-wrap:wrap}
+    .small{font-size:13px; color:#9fb0ad}
 
     /* QUIZ */
     #section-quiz{display:none}
@@ -89,16 +93,19 @@
       background:var(--option-selected); border-color:var(--option-ring);
       box-shadow: 0 0 0 2px rgba(31,221,172,.25) inset;
     }
+    .option.correct{ border-color:rgba(34,197,94,.65); box-shadow: 0 0 0 2px rgba(34,197,94,.2) inset; }
+    .option.correct .opt-letter{ background:#0f2d1b; border-color:#16a34a; color:#86efac; }
+    .option.wrong{ border-color:rgba(239,68,68,.65); box-shadow: 0 0 0 2px rgba(239,68,68,.2) inset; }
+    .option.wrong .opt-letter{ background:#2a1111; border-color:#ef4444; color:#fecaca; }
+
     .option input{display:none}
     .opt-letter{
       width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
       background:#0e1514; border:1px solid var(--stroke); font-weight:800; color:#cfeae4; flex:0 0 30px;
     }
 
-    /* Ajudas – ficam ABAIXO das alternativas */
-    #lifelines{
-      display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 4px;
-    }
+    /* Ajudas embaixo */
+    #lifelines{ display:flex; gap:10px; flex-wrap:wrap; margin:6px 0 6px }
     .lifebtn{
       display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px;
       background:#101615; border:1px solid var(--stroke); color:#cfeae4; font-weight:700;
@@ -107,7 +114,23 @@
     .lifebtn:hover{ background:#131b19; }
     .lifebtn:disabled{ opacity:.5; cursor:not-allowed; }
 
-    .row{display:flex; gap:12px; flex-wrap:wrap; margin-top:14px}
+    /* Painel de ajuda */
+    .helpbox{ margin-top:10px; padding:12px; border-radius:12px; border:1px solid var(--stroke); background:#0a0f0f; font-size:14px; color:#cbd5d4 }
+    .helpbox h4{ margin:0 0 8px; font-size:15px }
+    .opinions{ display:grid; gap:8px }
+    .opinion{ display:flex; gap:8px; align-items:center; }
+    .badge{ font-weight:800; font-size:12px; padding:4px 8px; border-radius:999px; background:#0f1514; border:1px solid var(--stroke) }
+
+    /* Modal Cartas */
+    #cardsModal{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.55); z-index:80; }
+    #cardsModal .box{ width:min(720px,92vw); background:#0c0f0f; border:1px solid var(--stroke); border-radius:18px; padding:22px; box-shadow:var(--shadow);}
+    #cardsGrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:12px }
+    .card-slot{ position:relative; aspect-ratio:3/4; border-radius:12px; overflow:hidden; border:1px solid var(--stroke); background:#0f1413; display:grid; place-items:center; cursor:pointer; }
+    .card-slot img{ width:100%; height:100%; object-fit:cover }
+    .card-label{ position:absolute; bottom:6px; left:6px; right:6px; font-size:13px; color:#cbd5e1; background:rgba(0,0,0,.35); padding:4px 6px; border-radius:8px; text-align:center }
+    .card-slot.revealed{ box-shadow:0 0 0 2px rgba(31,221,172,.25) inset; border-color:var(--option-ring) }
+
+    /* Confirm box */
     .confirm-box{ margin-top:14px; padding:12px; border-radius:12px; border:1px solid var(--stroke); background:#0a0f0f; }
     .confirm-title{font-weight:800; margin-bottom:10px;}
 
@@ -164,18 +187,16 @@
       <!-- Alternativas -->
       <div id="quizOpcoes" class="options"></div>
 
-      <!-- Ajudas (AGORA AQUI EMBAIXO) -->
+      <!-- Ajudas (em baixo) -->
       <div id="lifelines">
-        <button id="btnUni"  class="lifebtn" title="Universitários">
-          <span>🎓</span><span>Universitários</span>
-        </button>
-        <button id="btn5050" class="lifebtn" title="Elimine duas">
-          <span>½</span><span>Elimine Duas</span>
-        </button>
-        <button id="btnPular" class="lifebtn" title="Pular pergunta">
-          <span>⏭️</span><span>Pular</span>
-        </button>
+        <button id="btnUni"  class="lifebtn" title="Universitários">🎓 Universitários</button>
+        <button id="btnCartas" class="lifebtn" title="Cartas">🃏 Cartas</button>
+        <button id="btnAssist" class="lifebtn" title="Assistente Virtual">🤖 Assistente</button>
+        <button id="btnPular" class="lifebtn" title="Pular pergunta">⏭️ Pular</button>
       </div>
+
+      <!-- Painel de ajudas -->
+      <div id="ajudaBox" class="helpbox hidden"></div>
 
       <!-- Confirmar resposta -->
       <div id="confirmBox" class="confirm-box hidden">
@@ -195,19 +216,20 @@
         </div>
       </div>
 
+      <!-- Ações -->
       <div class="row" id="actionRow" style="margin-top:6px">
         <button id="btnResponder" class="btn primary">Enviar</button>
         <button id="btnPararAgora" class="btn danger">Parar</button>
       </div>
 
       <!-- Áudios -->
-      <audio id="fxCerteza"      src="audio/silvio-santos-voce-tem-certeza.mp3" preload="auto"></audio>
-      <audio id="fxEntendeu"     src="audio/silvio-santos-voce-entendeu-a-pergunta.mp3" preload="auto"></audio>
-      <audio id="fxEstaCerto"    src="audio/silvio-santos-esta-certo-disso.mp3" preload="auto"></audio>
-      <audio id="fxQualResposta" src="audio/silvio-santos-qual-e-a-resposta-certa.mp3" preload="auto"></audio>
+      <audio id="fxCerteza"       src="audio/silvio-santos-voce-tem-certeza.mp3" preload="auto"></audio>
+      <audio id="fxEntendeu"      src="audio/silvio-santos-voce-entendeu-a-pergunta.mp3" preload="auto"></audio>
+      <audio id="fxEstaCerto"     src="audio/silvio-santos-esta-certo-disso.mp3" preload="auto"></audio>
+      <audio id="fxQualResposta"  src="audio/silvio-santos-qual-e-a-resposta-certa.mp3" preload="auto"></audio>
       <audio id="fxCertaResposta" src="audio/silvio-santos-certa-resposta.mp3" preload="auto"></audio>
-      <audio id="fxErro"        src="audio/faustao-errou.mp3" preload="auto"></audio>
-      <audio id="fxAbertura"     src="audio/silvio-santos-abertura-show-do-milhao.mp3" preload="auto" loop></audio>
+      <audio id="fxErro"          src="audio/faustao-errou.mp3" preload="auto"></audio>
+      <audio id="fxAbertura"      src="audio/silvio-santos-abertura-show-do-milhao.mp3" preload="auto" loop></audio>
     </section>
 
     <!-- TELA FINAL -->
@@ -220,6 +242,18 @@
       </div>
     </section>
   </main>
+
+  <!-- Modal Cartas -->
+  <div id="cardsModal" aria-hidden="true">
+    <div class="box">
+      <h3 style="margin:0 0 10px">Escolha uma carta</h3>
+      <p class="small">Algumas removem várias alternativas… outras não removem nenhuma 👀</p>
+      <div id="cardsGrid"></div>
+      <div class="row" style="margin-top:14px; justify-content:flex-end">
+        <button id="btnFecharCartas" class="btn secondary">Fechar</button>
+      </div>
+    </div>
+  </div>
 
   <div id="fxOverlay" aria-hidden="true"></div>
 
@@ -264,7 +298,6 @@
       setTimeout(()=>{ fxOverlay.classList.remove(cls); resolve(); }, type === 'ok' ? 900 : 800);
     });
   }
-
   function testaImagem(src){
     return new Promise(resolve=>{
       const i = new Image();
@@ -273,13 +306,11 @@
       i.src = src + '?v=' + Date.now();
     });
   }
-
   function hideAll(){ secQuiz.style.display='none'; secFinal.style.display='none'; }
   function toggleLogo(show){ crentaoLogo.style.display = show ? '' : 'none'; }
 
-  /* logo do topo */
+  /* logo */
   (async function(){ const path='img/logosc.png'; if (await testaImagem(path)) crentaoLogo.src=path; })();
-
   /* capa */
   (async function(){
     const caps=['img/cover.png','img/cover.jpg','img/cover.webp','img/capa.png','img/capa.jpg','img/show-crentao-bg.png','img/show-crentao-bg.jpg','img/logosc.png'];
@@ -328,7 +359,7 @@
     }
   }
 
-  function embaralhar(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]} return a; }
+  function embaralhar(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i++){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]} return a; }
   function pickFrom(arr){ return arr.splice(Math.floor(Math.random()*arr.length),1)[0]; }
   function takeN(poolArr, n){ const out=[]; for(let i=0;i<n && poolArr.length;i++){ out.push(pickFrom(poolArr)); } return out; }
 
@@ -363,7 +394,7 @@
   const safeIdx=new Set([4,9,14]); // 5/10/15
 
   let idx=0, escolha=null, acertos=0;
-  const lifelines={uni:true, fifty:true, skip:true};
+  const lifelines={uni:true, cartas:true, assist:true, skip:true};
 
   // refs quiz
   const elPerg=document.getElementById('quizPergunta');
@@ -381,9 +412,15 @@
   const btnParar=document.getElementById('btnParar');
   const btnContinuar=document.getElementById('btnContinuar');
 
+  const ajudaBox=document.getElementById('ajudaBox');
   const btnUni=document.getElementById('btnUni');
-  const btn5050=document.getElementById('btn5050');
+  const btnCartas=document.getElementById('btnCartas');
+  const btnAssist=document.getElementById('btnAssist');
   const btnPular=document.getElementById('btnPular');
+
+  const cardsModal=document.getElementById('cardsModal');
+  const cardsGrid=document.getElementById('cardsGrid');
+  const btnFecharCartas=document.getElementById('btnFecharCartas');
 
   const finalTitulo=document.getElementById('finalTitulo');
   const finalMsg=document.getElementById('finalMsg');
@@ -391,11 +428,11 @@
   btnJogarNovamente.addEventListener('click', ()=>location.reload());
 
   function setLifelineButtons(){
-    btnUni.disabled=!lifelines.uni;   btnUni.style.opacity=lifelines.uni?1:.5;
-    btn5050.disabled=!lifelines.fifty;btn5050.style.opacity=lifelines.fifty?1:.5;
-    btnPular.disabled=!lifelines.skip;btnPular.style.opacity=lifelines.skip?1:.5;
+    btnUni.disabled=!lifelines.uni;       btnUni.style.opacity=lifelines.uni?1:.5;
+    btnCartas.disabled=!lifelines.cartas; btnCartas.style.opacity=lifelines.cartas?1:.5;
+    btnAssist.disabled=!lifelines.assist; btnAssist.style.opacity=lifelines.assist?1:.5;
+    btnPular.disabled=!lifelines.skip;    btnPular.style.opacity=lifelines.skip?1:.5;
   }
-
   function showActions(){ actionRow.classList.remove('hidden'); confirmBox.classList.add('hidden'); posBox.classList.add('hidden'); }
   function showConfirm(){ actionRow.classList.add('hidden'); confirmBox.classList.remove('hidden'); posBox.classList.add('hidden'); }
   function showPosAcerto(){ actionRow.classList.add('hidden'); confirmBox.classList.add('hidden'); posBox.classList.remove('hidden'); }
@@ -404,7 +441,7 @@
     hideAll(); secQuiz.style.display='block'; toggleLogo(true);
     perguntas = await buscarPerguntas();
     idx=0; escolha=null; acertos=0;
-    lifelines.uni=true; lifelines.fifty=true; lifelines.skip=true;
+    lifelines.uni=true; lifelines.cartas=true; lifelines.assist=true; lifelines.skip=true;
     canPlay(fxEntendeu);
     renderPergunta();
   }
@@ -413,7 +450,8 @@
     const p=perguntas[idx];
     elPerg.textContent=p.enunciado;
     elSub.textContent=`Vale ${ladder[idx].toLocaleString('pt-BR')} talento(s) de sabedoria`;
-    elOps.innerHTML=''; showActions(); setLifelineButtons();
+    elOps.innerHTML=''; ajudaBox.classList.add('hidden'); ajudaBox.innerHTML='';
+    setLifelineButtons();
 
     const letras=['A','B','C','D'];
     p.opcoes.forEach((txt,i)=>{
@@ -429,32 +467,137 @@
     });
   }
 
-  /* Ajudas */
+  /* ====== AJUDAS ====== */
+
+  // Universitários: 4 opiniões (podem errar)
   btnUni.addEventListener('click', ()=>{
     if(!lifelines.uni) return;
     lifelines.uni=false; setLifelineButtons();
-    const correta=perguntas[idx].certa;
-    let votos=[0,0,0,0];
-    let base=60+Math.floor(Math.random()*16);
-    votos[correta]=base; let resto=100-base;
-    const indices=[0,1,2,3].filter(i=>i!==correta);
-    indices.forEach((i,k)=>{ const part = k<indices.length-1 ? Math.floor(Math.random()*(resto-(indices.length-1-k))) : resto; votos[i]=part; resto-=part; });
-    alert('Universitários:\n' + votos.map((v,i)=>`${['A','B','C','D'][i]}: ${v}%`).join('\n'));
-  });
 
-  btn5050.addEventListener('click', ()=>{
-    if(!lifelines.fifty) return;
-    lifelines.fifty=false; setLifelineButtons();
     const correta=perguntas[idx].certa;
-    const erradas=[0,1,2,3].filter(i=>i!==correta);
-    // desabilita 2 erradas
-    erradas.slice(0,2).forEach(rem=>{
-      const opt=elOps.children[rem];
-      if(opt){ opt.style.opacity=.35; opt.style.pointerEvents='none'; }
+    const nomes=['Ana','Bruno','Carla','Diego','Edu','Fernanda','Gabi','Heitor','Iris','João'];
+    const escolhidos=embaralhar(nomes).slice(0,4);
+    // cada opinião tem 70% de chance de acertar; ajusta a gosto
+    const opinioes = escolhidos.map((nome)=>{
+      const acerta = Math.random() < 0.7;
+      const palpite = acerta ? correta : [0,1,2,3].filter(x=>x!==correta)[Math.floor(Math.random()*3)];
+      return {nome, palpite};
     });
+
+    ajudaBox.innerHTML = `
+      <h4>Universitários</h4>
+      <div class="opinions">
+        ${opinioes.map(op=>{
+          const letra = String.fromCharCode(65 + op.palpite);
+          return `<div class="opinion"><span class="badge">🎓 ${op.nome}</span> sugeriu: <strong>${letra}</strong></div>`;
+        }).join('')}
+      </div>
+    `;
+    ajudaBox.classList.remove('hidden');
   });
 
-  // IMPORTANTE: PULAR mantém o MESMO nível (não avança idx)
+  // Cartas: 4 cartas viradas → revela 1 carta com efeito
+  const CARTAS_POOL = [
+    { key:'jesus', label:'JESUS', elimina:'todas',  img:'img/jesus.png' },
+    { key:'noe', label:'NOÉ', elimina:2, img:'img/noe.png' },
+    { key:'davi', label:'DAVI', elimina:1, img:'img/davi.png' },
+    { key:'moises', label:'MOISÉS', elimina:2, img:'img/moises.png' },
+    { key:'pedro', label:'PEDRO', elimina:1, img:'img/pedro.png' },
+    { key:'joao-batista', label:'JOÃO BATISTA', elimina:1, img:'img/joao-batista.png' },
+    { key:'jo', label:'JÓ', elimina:1, img:'img/jo.png' },
+    { key:'paulo', label:'PAULO', elimina:1, img:'img/paulo.png' },
+    { key:'judas', label:'JUDAS ISCARIOTES', elimina:0, img:'img/judas.png' },
+    { key:'golias', label:'GOLIAS', elimina:0, img:'img/golias.png' },
+    { key:'farao', label:'FARAÓ', elimina:0, img:'img/farao.png' },
+    { key:'balao', label:'BALAÃO', elimina:0, img:'img/balao.png' },
+    { key:'serpente', label:'SERPENTE', elimina:0, img:'img/serpente.png' },
+  ];
+
+  btnCartas.addEventListener('click', ()=>{
+    if(!lifelines.cartas) return;
+    lifelines.cartas=false; setLifelineButtons();
+    abrirModalCartas();
+  });
+
+  function abrirModalCartas(){
+    // sorteia 4 cartas distintas do pool (bem variado)
+    const quatro = embaralhar(CARTAS_POOL).slice(0,4);
+    cardsGrid.innerHTML = quatro.map((c,idx)=>`
+      <div class="card-slot" data-idx="${idx}" data-key="${c.key}">
+        <img alt="Carta" src="img/card-back.png" onerror="this.style.display='none'">
+        <div class="card-label">Virar</div>
+      </div>
+    `).join('');
+    cardsModal.style.display='grid';
+
+    [...cardsGrid.children].forEach((slot, i)=>{
+      slot.addEventListener('click', ()=>{
+        const carta = quatro[i];
+        revelarCarta(slot, carta);
+        aplicarEfeitoCarta(carta);
+      }, { once:true });
+    });
+  }
+  function revelarCarta(slot, carta){
+    slot.classList.add('revealed');
+    slot.innerHTML = `
+      <img alt="${carta.label}" src="${carta.img}" onerror="this.remove();">
+      <div class="card-label"><strong>${carta.label}</strong></div>
+    `;
+  }
+  btnFecharCartas.addEventListener('click', ()=>{ cardsModal.style.display='none'; });
+
+  function aplicarEfeitoCarta(carta){
+    // fecha modal depois de 1s
+    setTimeout(()=>{ cardsModal.style.display='none'; }, 900);
+
+    const correta = perguntas[idx].certa;
+    const optEls = [...elOps.children]; // .option DIVs
+
+    if(carta.elimina === 'todas'){
+      // deixa só a correta
+      optEls.forEach((el, i)=>{
+        if(i !== correta){
+          el.style.opacity = .35; el.style.pointerEvents='none';
+        }
+      });
+      ajudaBox.innerHTML = `<h4>Cartas</h4><div>🃏 <strong>${carta.label}</strong>: removeu todas as erradas! Sobra só a correta.</div>`;
+      ajudaBox.classList.remove('hidden');
+      return;
+    }
+
+    const qtd = Number(carta.elimina) || 0;
+    if(qtd <= 0){
+      ajudaBox.innerHTML = `<h4>Cartas</h4><div>🃏 <strong>${carta.label}</strong>: não removeu nenhuma alternativa.</div>`;
+      ajudaBox.classList.remove('hidden');
+      return;
+    }
+
+    // remove aleatoriamente 'qtd' erradas
+    const erradasIdx = [0,1,2,3].filter(i=>i!==correta && !optEls[i].style.pointerEvents);
+    embaralhar(erradasIdx).slice(0,qtd).forEach(i=>{
+      const el = optEls[i];
+      el.style.opacity = .35; el.style.pointerEvents='none';
+    });
+
+    ajudaBox.innerHTML = `<h4>Cartas</h4><div>🃏 <strong>${carta.label}</strong>: removeu ${qtd} alternativa(s) errada(s).</div>`;
+    ajudaBox.classList.remove('hidden');
+  }
+
+  // Assistente: sempre indica a correta
+  btnAssist.addEventListener('click', ()=>{
+    if(!lifelines.assist) return;
+    lifelines.assist=false; setLifelineButtons();
+    const correta=perguntas[idx].certa;
+    const letra = String.fromCharCode(65 + correta);
+    ajudaBox.innerHTML = `
+      <h4>Assistente Virtual</h4>
+      <div>🤖 Minha sugestão é a alternativa <strong>${letra}</strong>.</div>
+    `;
+    ajudaBox.classList.remove('hidden');
+  });
+
+  // Pular: troca pergunta do mesmo nível
   btnPular.addEventListener('click', ()=>{
     if(!lifelines.skip) return;
     const atual = perguntas[idx];
@@ -467,27 +610,50 @@
     renderPergunta(); canPlay(fxEntendeu);
   });
 
-  /* fluxo de resposta */
+  /* ====== Fluxo de Enviar/Confirmar ====== */
   btnResp.addEventListener('click', ()=>{
     if(escolha===null){ canPlay(fxCerteza); return; }
-    showConfirm(); stopAllFx(); canPlay([fxCerteza,fxEstaCerto,fxQualResposta][idx % 3]);
+    confirmBox.classList.remove('hidden');
+    actionRow.classList.add('hidden');
+    stopAllFx(); canPlay([fxCerteza,fxEstaCerto,fxQualResposta][idx % 3]);
   });
-  btnCanc.addEventListener('click', ()=>{ showActions(); });
+  btnCanc.addEventListener('click', ()=>{
+    confirmBox.classList.add('hidden');
+    actionRow.classList.remove('hidden');
+  });
 
   btnConf.addEventListener('click', async ()=>{
+    confirmBox.classList.add('hidden');
+    actionRow.classList.remove('hidden');
+
     stopAllFx();
-    const ok=(escolha===perguntas[idx].certa);
+    const correta = perguntas[idx].certa;
+
+    // trava clique
+    [...elOps.children].forEach(el=>el.style.pointerEvents='none');
+
+    // marca visual (certa = verde; escolhida errada = vermelha)
+    [...elOps.children].forEach((el,i)=>{
+      el.classList.remove('selected');
+      if(i===correta) el.classList.add('correct');
+    });
+    if(escolha!==correta){
+      elOps.children[escolha]?.classList.add('wrong');
+    }
+
+    const ok=(escolha===correta);
     if(ok){
       acertos++; 
       await Promise.all([fxCerta.play().catch(()=>{}), showFx('ok')]);
       const ganhoAtual = ladder[idx].toLocaleString('pt-BR');
       posTitulo.textContent = `Acertou! Você já tem ${ganhoAtual} talento(s). Deseja PARAR agora ou CONTINUAR?`;
-      showPosAcerto();
+      posBox.classList.remove('hidden');
+      actionRow.classList.add('hidden');
 
       btnParar.onclick = ()=> finalizar({parouDepois:true}); 
       btnContinuar.onclick = ()=>{
         idx++;
-        if(idx<perguntas.length){ escolha=null; renderPergunta(); canPlay(fxEntendeu); }
+        if(idx<perguntas.length){ escolha=null; limparMarcacao(); renderPergunta(); canPlay(fxEntendeu); }
         else { finalizar({}); }
       };
     } else {
@@ -496,6 +662,14 @@
     }
   });
 
+  function limparMarcacao(){
+    [...elOps.children].forEach(el=>{
+      el.classList.remove('selected','correct','wrong');
+      el.style.opacity = 1; el.style.pointerEvents='';
+    });
+  }
+
+  // Parar (vermelho) com confirmação
   btnPararAgora.addEventListener('click', ()=>{
     if(!confirm('Deseja encerrar agora e ficar com o valor acumulado até aqui?')) return;
     finalizar({parouAgora:true});
@@ -513,18 +687,16 @@
   // finalizar({parouAgora=false, parouDepois=false, errou=false})
   async function finalizar({parouAgora=false, parouDepois=false, errou=false}){
     let tesouro=0;
-    if (parouAgora) tesouro = acumuladoAtual();
-    else if (parouDepois) tesouro = ladder[idx];
-    else if (errou) tesouro = calculaCheckpoint();
-    else tesouro = ladder[ladder.length-1];
+    if (parouAgora)      tesouro = acumuladoAtual();
+    else if (parouDepois)tesouro = ladder[idx];
+    else if (errou)      tesouro = calculaCheckpoint();
+    else                 tesouro = ladder[ladder.length-1];
 
-    // opcional: gravar no ranking depois que fizermos o username/login
-    // await sb.from('ranking').insert([{ nome: 'Anônimo', pontos: acertos, tesouro, quando: new Date().toISOString() }]).catch(()=>{});
-
+    // (ranking com username/conta vem depois, quando ativarmos auth)
     hideAll(); toggleLogo(true); secFinal.style.display='block';
     if(errou){
       finalTitulo.textContent = 'Não foi dessa vez 😅';
-      finalMsg.textContent = `Você terminou com ${tesouro.toLocaleString('pt-BR')} talento(s) de sabedoria. Tente novamente!`;
+      finalMsg.textContent = `Você terminou com ${tesouro.toLocaleString('pt-BR')} talento(s) de sabedoria.`;
     } else if(parouDepois || parouAgora){
       finalTitulo.textContent = 'Você decidiu parar 👏';
       finalMsg.textContent = `Parabéns! Você garantiu ${tesouro.toLocaleString('pt-BR')} talento(s) de sabedoria.`;
@@ -533,8 +705,10 @@
       finalMsg.textContent = `Pontuação máxima alcançada: ${tesouro.toLocaleString('pt-BR')} talento(s) de sabedoria.`;
     }
   }
+
 })();
 </script>
 </body>
 </html>
+
 
