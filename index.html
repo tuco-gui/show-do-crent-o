@@ -6,522 +6,136 @@
   <title>Show do Crentão</title>
   <meta name="theme-color" content="#000000" />
   <style>
-    :root{
-      --bg:#000; --panel:#0b0f0f; --panel-2:#0e1313; --muted:#9fb0ad; --text:#ffffff;
-      --green:#19c37d; --green-700:#0c915b; --red:#e5484d; --white:#fff;
-      --radius:16px; --shadow:0 12px 40px rgba(0,0,0,.45); --pad: clamp(16px, 3vw, 28px); --maxw: 1040px;
-      --sel:#163f32; --hover:#121717; --outline: 1px solid rgba(255,255,255,.06);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
-    img{display:block;max-width:100%}
-    .hidden{display:none !important}
-
-    header{
-      position:fixed; inset:0 0 auto 0; height:54px; display:flex; align-items:center; justify-content:space-between;
-      padding:0 var(--pad); z-index:40; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,0));
-    }
-    header .brand, header .right{pointer-events:auto; display:flex; align-items:center; gap:12px;}
-    .brand img{height:22px; opacity:.96}
-    #crentaoLogo{height:24px; opacity:.96; display:none;}
-
-    /* HERO */
-    #hero{
-      position:relative; min-height:100svh; display:flex; align-items:flex-end; justify-content:center;
-      padding: calc(56px + 8svh) var(--pad) calc(20svh); overflow:hidden;
-    }
-    #hero .bg{ position:absolute; inset:0; z-index:0; display:grid; place-items:center;}
-    #heroImg{ width:100%; height:100%; object-fit:cover; user-select:none; -webkit-user-drag:none; }
-    @media (max-width:768px){ #heroImg{ object-fit:contain; object-position:center 60px; } }
-
-    #hero .cta{
-      position:absolute; left:50%; transform:translateX(-50%);
-      bottom: calc(12svh + env(safe-area-inset-bottom)); width:100%; max-width:min(780px,92vw);
-      display:flex; gap:14px; flex-wrap:wrap; justify-content:center; z-index:2;
-    }
-
-    .btn{
-      appearance:none; border:0; border-radius:20px; padding:16px 26px; font-weight:800; letter-spacing:.02em; text-transform:uppercase;
-      cursor:pointer; box-shadow: var(--shadow); transition:.15s transform ease, .2s box-shadow ease, .2s opacity ease, .2s filter ease;
-    }
-    .btn:active{transform: translateY(1px); box-shadow:0 8px 20px rgba(0,0,0,.35);}
-    .btn.primary{ background:linear-gradient(180deg, var(--green) 0%, var(--green-700) 100%); color:#05281b; }
-    .btn.secondary{ background:var(--white); color:#0a0d0c }
-    .btn.danger{ background:linear-gradient(180deg, #ff6a70 0%, var(--red) 100%); color:#3a090b; }
-    .btn.ghost{ background:#121515; color:#d7e0de; border:1px solid rgba(255,255,255,.08); }
-    .btn.full{ flex:1 1 320px; }
-
-    main{display:grid; gap:28px; padding:24px var(--pad) 48px; max-width:var(--maxw); margin:0 auto}
-    .card{
-      background:rgba(12,15,15,.78); backdrop-filter: blur(6px); border:var(--outline); border-radius:var(--radius); box-shadow:var(--shadow);
-      padding:min(28px,3.2vw);
-    }
-
-    /* QUIZ */
-    #section-quiz h2{margin:0 0 8px; font-size:22px}
-    .sub{margin:0 0 14px; font-size:14px; color:var(--muted)}
-    #quizOpcoes{display:grid; gap:10px; margin:12px 0 8px}
-    .op{
-      display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:14px; border:var(--outline); background:var(--panel);
-      cursor:pointer; transition:background .15s ease, box-shadow .15s ease, transform .08s ease; user-select:none;
-    }
-    .op:hover{ background:var(--hover); }
-    .op input{ display:none; }
-    .op .bullet{ width:22px; height:22px; border-radius:50%; border:2px solid #2b3a38; background:#0e1313; display:grid; place-items:center; font-size:12px; color:#6cd9b7; }
-    .op.selected{ background:var(--sel); box-shadow: inset 0 0 0 1px rgba(25,195,125,.35); }
-    .op.correct{ background: #0e2f24; box-shadow: inset 0 0 0 2px #20d19b; }
-    .op.wrong{ background: #2a1212; box-shadow: inset 0 0 0 2px #e96b70; }
-
-    /* Lifelines abaixo das opções */
-    #lifelineRow{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 4px; }
-    .chip{
-      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.08);
-      background:#111414; color:#e6f1ef; font-weight:700; box-shadow: var(--shadow); cursor:pointer; transition:.15s ease opacity, .15s ease transform;
-    }
-    .chip:active{ transform:translateY(1px) }
-    .chip:disabled, .chip[disabled]{ opacity:.45; cursor:not-allowed; }
-
-    /* Barras de ação e modais de confirmação */
-    .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
-    #confirmBox, #posAcertoBox{ margin-top:14px; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,.08); background:#0a0f0f; }
-    .confirm-title{font-weight:800; margin-bottom:10px;}
-
-    /* FX overlay */
-    #fxOverlay{ position:fixed; inset:0; pointer-events:none; z-index:60; }
-    .fx-ok::after{
-      content:""; position:absolute; inset:0; margin:auto; width:min(55vmin,520px); height:min(55vmin,520px);
-      border-radius:50%; background:radial-gradient(ellipse at center, rgba(31,221,172,.28), rgba(31,221,172,0) 60%); animation:okPulse .95s ease-out forwards;
-    }
-    @keyframes okPulse{ 0%{transform:scale(.7); opacity:.0} 25%{opacity:.9} 100%{transform:scale(1.15); opacity:0} }
-    .fx-wrong{ animation:shake .6s ease-in-out 0s 1; }
-    .fx-wrong::after{
-      content:""; position:absolute; inset:0; background:radial-gradient(ellipse at center, rgba(242,78,58,.18), rgba(242,78,58,0) 65%); animation:fadeOut .8s ease forwards;
-    }
-    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
-    @keyframes fadeOut{ from{opacity:.9} to{opacity:0} }
-
-    /* Final */
-    .final-title{font-size:22px; font-weight:800; margin:0 0 8px}
-    .final-msg{color:#cbd6d4; margin:0 0 12px}
+    /* estilos iguais ao seu último */
+    body{margin:0;background:#000;color:#fff;font-family:sans-serif}
+    .hidden{display:none}
+    header{padding:10px;color:#fff;font-weight:bold}
+    .btn{padding:14px 22px;margin:8px;font-weight:bold;border:none;border-radius:12px;cursor:pointer}
+    .btn.primary{background:#19c37d;color:#000}
+    .btn.secondary{background:#fff;color:#000}
+    .btn.danger{background:#e5484d;color:#fff}
+    #hero{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}
+    #section-quiz{padding:20px}
+    .op{margin:6px;padding:12px;border:1px solid #666;border-radius:8px;cursor:pointer}
+    .op.selected{background:#163f32}
+    .op.correct{background:#0e2f24}
+    .op.wrong{background:#2a1212}
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand"><img src="img/logo.png" alt="Sobrenatural Church" onerror="this.style.display='none'"></div>
-    <div class="right"><img id="crentaoLogo" alt="Show do Crentão"></div>
-  </header>
+<header>
+  Show do Crentão
+</header>
 
-  <!-- HOME -->
-  <section id="hero">
-    <div class="bg"><img id="heroImg" alt="Capa – Show do Crentão" class="hidden"></div>
-    <div class="cta">
-      <button id="btnStart" class="btn primary full">Iniciar</button>
-      <button id="btnRanking" class="btn secondary full">Ranking</button>
+<!-- HOME -->
+<section id="hero">
+  <div class="cta">
+    <button id="btnStart" class="btn primary">Iniciar</button>
+    <button id="btnRanking" class="btn secondary">Ranking</button>
+  </div>
+</section>
+
+<main>
+  <!-- QUIZ -->
+  <section id="section-quiz" class="hidden">
+    <h2 id="quizPergunta">Pergunta</h2>
+    <div id="quizOpcoes"></div>
+    <div class="row">
+      <button id="btnResponder" class="btn primary">Enviar</button>
+      <button id="btnPararAgora" class="btn danger">Parar</button>
     </div>
   </section>
 
-  <main>
-    <!-- QUIZ -->
-    <section id="section-quiz" class="card hidden">
-      <h2 id="quizPergunta">Pergunta</h2>
-      <p class="sub"><span id="valorPergunta"></span></p>
+  <!-- FINAL -->
+  <section id="section-final" class="hidden">
+    <h2 id="finalTitulo">Fim do jogo</h2>
+    <p id="finalMsg"></p>
+    <button id="btnJogarNovamente" class="btn primary">Jogar novamente</button>
+  </section>
+</main>
 
-      <div id="quizOpcoes"></div>
-
-      <!-- Lifelines ABAIXO das alternativas -->
-      <div id="lifelineRow">
-        <button id="btnUni" class="chip"><span>🎓</span> Universitários</button>
-        <button id="btnCartas" class="chip"><span>🂠</span> Cartas</button>
-        <button id="btnAssistente" class="chip"><span>💬</span> Assistente</button>
-        <button id="btnPular" class="chip"><span>🏃</span> Pular</button>
-      </div>
-
-      <div id="ajudaBox" class="sub hidden"></div>
-
-      <!-- Confirmar resposta -->
-      <div id="confirmBox" class="hidden">
-        <div class="confirm-title">Você tem certeza da resposta?</div>
-        <div class="row"><button id="btnConfirmar" class="btn primary">Sim, confirmar</button></div>
-      </div>
-
-      <!-- Após acerto: parar ou continuar -->
-      <div id="posAcertoBox" class="hidden">
-        <div class="confirm-title" id="posAcertoTitulo"></div>
-        <div class="row">
-          <button id="btnParar" class="btn ghost danger">Parar</button>
-          <button id="btnContinuar" class="btn primary">Continuar</button>
-        </div>
-      </div>
-
-      <div class="row">
-        <button id="btnResponder" class="btn primary">Enviar</button>
-        <button id="btnPararAgora" class="btn danger">Parar</button>
-      </div>
-
-      <!-- Áudios -->
-      <audio id="fxCerteza"       src="audio/silvio-santos-voce-tem-certeza.mp3" preload="auto"></audio>
-      <audio id="fxEntendeu"      src="audio/silvio-santos-voce-entendeu-a-pergunta.mp3" preload="auto"></audio>
-      <audio id="fxEstaCerto"     src="audio/silvio-santos-esta-certo-disso.mp3" preload="auto"></audio>
-      <audio id="fxQualResposta"  src="audio/silvio-santos-qual-e-a-resposta-certa.mp3" preload="auto"></audio>
-      <audio id="fxCertaResposta" src="audio/silvio-santos-certa-resposta.mp3" preload="auto"></audio>
-      <audio id="fxErrou"         src="audio/faustao-errou.mp3" preload="auto"></audio>
-      <audio id="fxAbertura"      src="audio/silvio-santos-abertura-show-do-milhao.mp3" preload="auto" loop></audio>
-    </section>
-
-    <!-- TELA FINAL -->
-    <section id="section-final" class="card hidden">
-      <h2 class="final-title" id="finalTitulo">Fim do jogo</h2>
-      <p class="final-msg" id="finalMsg"></p>
-      <div class="row">
-        <button id="btnJogarNovamente" class="btn primary">Jogar novamente</button>
-        <a class="btn secondary" href="ranking.html">Ver ranking</a>
-      </div>
-    </section>
-  </main>
-
-  <div id="fxOverlay" aria-hidden="true"></div>
-
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 (function(){
-  /* ---------- Supabase ---------- */
-  const SUPABASE_URL = import.meta?.env?.VITE_SUPABASE_URL || 'https://ihajmegcdgwchxslnaep.supabase.co';
-  const SUPABASE_ANON_KEY = import.meta?.env?.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloYWptZWdjZGd3Y2h4c2xuYWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0OTQzMTgsImV4cCI6MjA3MjA3MDMxOH0.WM36lA9n0PU9qd-DKdrWVB_UzGVXpsfJ984oHiXDU8Y';
+  /* 🔑 FIX: usar valores diretos, não import.meta */
+  const SUPABASE_URL = "https://ihajmegcdgwchxslnaep.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloYWptZWdjZGd3Y2h4c2xuYWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0OTQzMTgsImV4cCI6MjA3MjA3MDMxOH0.WM36lA9n0PU9qd-DKdrWVB_UzGVXpsfJ984oHiXDU8Y";
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  /* ---------- Refs ---------- */
-  const hero = document.getElementById('hero');
-  const heroImg = document.getElementById('heroImg');
-  const crentaoLogo = document.getElementById('crentaoLogo');
-  const fxOverlay = document.getElementById('fxOverlay');
+  const hero=document.getElementById("hero");
+  const secQuiz=document.getElementById("section-quiz");
+  const secFinal=document.getElementById("section-final");
 
-  const fxAbertura     = document.getElementById('fxAbertura');
-  const fxCerteza      = document.getElementById('fxCerteza');
-  const fxEntendeu     = document.getElementById('fxEntendeu');
-  const fxEstaCerto    = document.getElementById('fxEstaCerto');
-  const fxQualResposta = document.getElementById('fxQualResposta');
-  const fxCerta        = document.getElementById('fxCertaResposta');
-  const fxErrou        = document.getElementById('fxErrou');
+  const btnStart=document.getElementById("btnStart");
+  const btnRanking=document.getElementById("btnRanking");
+  const btnResponder=document.getElementById("btnResponder");
+  const btnPararAgora=document.getElementById("btnPararAgora");
+  const btnJogarNovamente=document.getElementById("btnJogarNovamente");
 
-  const secQuiz  = document.getElementById('section-quiz');
-  const secFinal = document.getElementById('section-final');
+  const elPerg=document.getElementById("quizPergunta");
+  const elOps=document.getElementById("quizOpcoes");
+  const finalTitulo=document.getElementById("finalTitulo");
+  const finalMsg=document.getElementById("finalMsg");
 
-  const btnStart   = document.getElementById('btnStart');
-  const btnRanking = document.getElementById('btnRanking');
-
-  const elPerg  = document.getElementById('quizPergunta');
-  const elSub   = document.getElementById('valorPergunta');
-  const elOps   = document.getElementById('quizOpcoes');
-
-  const confirmBox = document.getElementById('confirmBox');
-  const btnResponder = document.getElementById('btnResponder');
-  const btnConfirmar = document.getElementById('btnConfirmar');
-  const posBox   = document.getElementById('posAcertoBox');
-  const posTitulo= document.getElementById('posAcertoTitulo');
-  const btnParar = document.getElementById('btnParar');
-  const btnContinuar = document.getElementById('btnContinuar');
-  const btnPararAgora = document.getElementById('btnPararAgora');
-  const ajudaBox = document.getElementById('ajudaBox');
-
-  const btnUni = document.getElementById('btnUni');
-  const btnCartas = document.getElementById('btnCartas');
-  const btnAssistente = document.getElementById('btnAssistente');
-  const btnPular = document.getElementById('btnPular');
-
-  const finalTitulo=document.getElementById('finalTitulo');
-  const finalMsg=document.getElementById('finalMsg');
-  const btnJogarNovamente=document.getElementById('btnJogarNovamente');
-
-  /* ---------- Util ---------- */
-  const canPlay = a => { try { a.currentTime=0; a.play().catch(()=>{}); } catch(e){} };
-  const stop = a => { try { a.pause(); a.currentTime=0; } catch(e){} };
-  const stopAllFx = ()=>[fxAbertura,fxCerteza,fxEntendeu,fxEstaCerto,fxQualResposta,fxCerta,fxErrou].forEach(stop);
-
-  function hideAll(){ secQuiz.classList.add('hidden'); secFinal.classList.add('hidden'); }
-  function show(el){ el.classList.remove('hidden'); }
-  function toggleLogo(showIt){ crentaoLogo.style.display = showIt ? '' : 'none'; }
-
-  async function testaImagem(src){
-    return await new Promise(resolve=>{
-      const i=new Image(); i.onload=()=>resolve(true); i.onerror=()=>resolve(false); i.src=src+'?v='+Date.now();
-    });
-  }
-
-  // logos e capa
-  (async function(){
-    const path='img/logo.png'; if (await testaImagem(path)) crentaoLogo.src=path;
-    const caps=['img/cover.png','img/cover.jpg','img/cover.webp','img/capa.png','img/capa.jpg','img/show-crentao-bg.png','img/show-crentao-bg.jpg'];
-    for (const src of caps){ if (await testaImagem(src)){ heroImg.src=src; heroImg.classList.remove('hidden'); break; } }
-  })();
-
-  btnStart.addEventListener('click', ()=>{
-    canPlay(fxAbertura);
-    hero.style.transition='transform .35s ease, opacity .35s ease';
-    hero.style.transform='translateY(-8px)'; hero.style.opacity='0';
-    setTimeout(()=>{ hero.style.display='none'; startQuiz(); }, 360);
-  });
-  btnRanking.addEventListener('click', ()=>location.href='ranking.html');
-
-  btnJogarNovamente.addEventListener('click', ()=>{
-    hero.style.display='block';
-    hero.style.transition=''; hero.style.opacity='1'; hero.style.transform='none';
-    hideAll(); stopAllFx(); toggleLogo(false);
-  });
-
-  /* ---------- Banco de perguntas ---------- */
-  let perguntas=[], pool={facil:[],medio:[],dificil:[]};
-  const ladder=[100,200,300,500,1000,2000,5000,10000,20000,50000,100000,200000,300000,500000,750000,1000000];
-  const safeIdx=new Set([4,9,14]); // 5/10/15
-
+  let perguntas=[
+    {enunciado:"Quem construiu a arca?",opcoes:["Moisés","Noé","Paulo","Pedro"],certa:1},
+    {enunciado:"Quem é o Salvador?",opcoes:["Davi","Jesus","Abraão","João"],certa:1}
+  ];
   let idx=0, escolha=null, acertos=0;
-  const lifelines={uni:true, cartas:true, assist:true, skip:true};
-
-  function mapLetraToIndex(ch){ const m={A:0,B:1,C:2,D:3}; return m[(ch||'').toUpperCase()]; }
-
-  function normaliza(r,i){
-    return {
-      id:r.id ?? ('local_'+i+'_'+Date.now()),
-      enunciado:r.enunciado,
-      opcoes:[r.a,r.b,r.c,r.d],
-      certa: mapLetraToIndex(r.correta),
-      dificuldade:(r.dificuldade||'dificil').toLowerCase()
-    }
-  }
-
-  async function buscarPerguntas(){
-    try{
-      const { data, error } = await sb.from('perguntas')
-        .select('id,enunciado,a,b,c,d,correta,dificuldade')   // <- sem 'ativo'
-        .limit(400);
-      if(error) throw error;
-      const todas=(data||[]).map(normaliza).filter(q=> q.certa>=0 && q.opcoes.every(Boolean));
-      return montarSequencia(todas);
-    }catch(e){
-      // fallback mínimo se não achar
-      const fb = [
-        {enunciado:'Quem é o centro da fé cristã?',a:'Paulo',b:'Pedro',c:'Jesus',d:'Moisés',correta:'C',dificuldade:'facil'},
-        {enunciado:'Quem construiu a arca?',a:'Noé',b:'Davi',c:'Salomão',d:'José',correta:'A',dificuldade:'facil'},
-        {enunciado:'Autor de grande parte das cartas do NT',a:'Tiago',b:'Paulo',c:'Pedro',d:'João',correta:'B',dificuldade:'medio'},
-      ].map(normaliza);
-      return montarSequencia(fb);
-    }
-  }
-
-  function embaralhar(a){ a=[...a]; for(let i=a.length-1;i>0;i++){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
-  function pickFrom(arr){ return arr.splice(Math.floor(Math.random()*arr.length),1)[0]; }
-  function takeN(poolArr, n){ const out=[]; for(let i=0;i<n && poolArr.length;i++){ out.push(pickFrom(poolArr)); } return out; }
-
-  function montarSequencia(todas){
-    pool={facil:[],medio:[],dificil:[]};
-    todas.forEach(q=>pool[q.dificuldade==='facil'?'facil':(q.dificuldade==='medio'?'medio':'dificil')].push(q));
-    pool.facil=embaralhar(pool.facil); pool.medio=embaralhar(pool.medio); pool.dificil=embaralhar(pool.dificil);
-
-    const seq=[...takeN(pool.facil,3), ...takeN(pool.medio,3), ...takeN(pool.dificil,10)];
-    const rest=[...pool.facil,...pool.medio,...pool.dificil];
-    while(seq.length<16 && rest.length) seq.push(pickFrom(rest));
-
-    const usados=new Set(seq.map(q=>q.id));
-    pool.facil = pool.facil.filter(q=>!usados.has(q.id));
-    pool.medio = pool.medio.filter(q=>!usados.has(q.id));
-    pool.dificil = pool.dificil.filter(q=>!usados.has(q.id));
-    return seq.slice(0,16);
-  }
-
-  /* ---------- Início do jogo ---------- */
-  async function startQuiz(){
-    toggleLogo(true);
-    hideAll(); show(secQuiz); stopAllFx();
-    perguntas = await buscarPerguntas();
-    idx=0; escolha=null; acertos=0;
-    lifelines.uni=true; lifelines.cartas=true; lifelines.assist=true; lifelines.skip=true;
-    setLifelineButtons();
-    canPlay(fxEntendeu);
-    renderPergunta();
-  }
-
-  function setLifelineButtons(){
-    const set=(el,on)=>{ el.disabled=!on; el.style.opacity=on?1:.45; };
-    set(btnUni, lifelines.uni); set(btnCartas,lifelines.cartas); set(btnAssistente,lifelines.assist); set(btnPular,lifelines.skip);
-  }
 
   function renderPergunta(){
     const p=perguntas[idx];
     elPerg.textContent=p.enunciado;
-    elSub.textContent=`Vale ${ladder[idx].toLocaleString('pt-BR')} talento(s) de sabedoria`;
-
-    elOps.innerHTML='';
-    ajudaBox.classList.add('hidden'); ajudaBox.innerHTML='';
-    confirmBox.classList.add('hidden'); posBox.classList.add('hidden');
-
+    elOps.innerHTML="";
+    escolha=null;
     p.opcoes.forEach((txt,i)=>{
-      const div=document.createElement('div');
-      div.className='op'; div.dataset.i=i;
-      div.innerHTML=`<span class="bullet">${String.fromCharCode(65+i)}</span><span>${txt}</span>`;
-      div.addEventListener('click',()=>{
+      const div=document.createElement("div");
+      div.className="op";
+      div.textContent=txt;
+      div.onclick=()=>{
         escolha=i;
-        elOps.querySelectorAll('.op').forEach(o=>o.classList.remove('selected'));
-        div.classList.add('selected');
-      });
+        elOps.querySelectorAll(".op").forEach(o=>o.classList.remove("selected"));
+        div.classList.add("selected");
+      };
       elOps.appendChild(div);
     });
   }
 
-  // Ajudas
-  btnUni.addEventListener('click', ()=>{
-    if(!lifelines.uni) return;
-    lifelines.uni=false; setLifelineButtons();
+  btnStart.onclick=()=>{
+    hero.classList.add("hidden");
+    secQuiz.classList.remove("hidden");
+    renderPergunta();
+  };
+
+  btnRanking.onclick=()=>alert("Ranking em construção...");
+  btnResponder.onclick=()=>{
+    if(escolha===null){alert("Selecione uma opção");return;}
     const correta=perguntas[idx].certa;
-    // 4 opiniões (nem sempre confiáveis)
-    const votos=[0,0,0,0]; let certeza = 60 + Math.floor(Math.random()*21); // 60–80% p/ correta
-    // às vezes “erram”: 25% de chance de inverter confiança
-    if(Math.random()<0.25){ const alt=[0,1,2,3].filter(x=>x!==correta); const fake=alt[Math.floor(Math.random()*alt.length)]; votos[fake]=certeza; }
-    else votos[correta]=certeza;
-    let resto=100-certeza; const idxs=[0,1,2,3].filter(x=>votos[x]===0);
-    idxs.forEach((i,k)=>{ const part = k<idxs.length-1 ? Math.floor(Math.random()*(resto-(idxs.length-1-k))) : resto; votos[i]=part; resto-=part; });
-    ajudaBox.innerHTML = `<strong>Universitários:</strong><br>` + votos.map((v,i)=>`(${String.fromCharCode(65+i)}) ${v}%`).join(' — ');
-    ajudaBox.classList.remove('hidden');
-  });
-
-  // Cartas (sorteia efeito)
-  const cartasPool = [
-    {nome:'JESUS', remove:3}, // “todas erradas” → sobra a correta (na prática remove 3)
-    {nome:'NOÉ', remove:2}, {nome:'MOISÉS', remove:2},
-    {nome:'DAVI', remove:1}, {nome:'PEDRO', remove:1}, {nome:'JOÃO BATISTA', remove:1}, {nome:'JÓ', remove:1}, {nome:'PAULO', remove:1},
-    {nome:'JUDAS', remove:0}, {nome:'GOLIAS', remove:0}, {nome:'FARAÓ', remove:0}, {nome:'BALAÃO', remove:0}, {nome:'SERPENTE', remove:0},
-  ];
-  btnCartas.addEventListener('click', ()=>{
-    if(!lifelines.cartas) return;
-    lifelines.cartas=false; setLifelineButtons();
-    const carta = cartasPool[Math.floor(Math.random()*cartasPool.length)];
-    const correta = perguntas[idx].certa;
-    const erradas=[0,1,2,3].filter(i=>i!==correta);
-    const qtd = Math.min(carta.remove, erradas.length);
-    const removidas=[];
-    for(let i=0;i<qtd;i++){ const take=erradas.splice(Math.floor(Math.random()*erradas.length),1)[0]; removidas.push(take); }
-    removidas.forEach(i=>{
-      const op=elOps.querySelector(`.op[data-i="${i}"]`);
-      if(op){ op.style.opacity=.35; op.style.pointerEvents='none'; }
+    elOps.querySelectorAll(".op").forEach((el,i)=>{
+      if(i===correta) el.classList.add("correct");
+      if(i===escolha && i!==correta) el.classList.add("wrong");
     });
-    ajudaBox.innerHTML = `<strong>Cartas:</strong> ${carta.nome} → removeu ${qtd} alternativa(s).`;
-    ajudaBox.classList.remove('hidden');
-  });
+    if(escolha===correta){acertos++; idx++; if(idx<perguntas.length) setTimeout(renderPergunta,800); else finalizar();}
+    else finalizar();
+  };
 
-  btnAssistente.addEventListener('click', ()=>{
-    if(!lifelines.assist) return;
-    lifelines.assist=false; setLifelineButtons();
-    const correta=perguntas[idx].certa;
-    ajudaBox.innerHTML = `<strong>Assistente:</strong> a resposta correta é <b>${String.fromCharCode(65+correta)}</b>.`;
-    ajudaBox.classList.remove('hidden');
-  });
+  btnPararAgora.onclick=()=>finalizar();
+  btnJogarNovamente.onclick=()=>{idx=0;acertos=0;secFinal.classList.add("hidden");hero.classList.remove("hidden");};
 
-  btnPular.addEventListener('click', ()=>{
-    if(!lifelines.skip) return;
-    const atual = perguntas[idx];
-    const diff = (atual.dificuldade==='facil'?'facil':(atual.dificuldade==='medio'?'medio':'dificil'));
-    const repositorio = pool[diff] || [];
-    if(!repositorio.length){ alert('Não há pergunta extra deste nível para pular.'); return; }
-    lifelines.skip=false; setLifelineButtons();
-    const nova = repositorio.splice(Math.floor(Math.random()*repositorio.length),1)[0];
-    perguntas[idx] = nova; renderPergunta(); canPlay(fxEntendeu);
-  });
-
-  // Resposta → confirmar
-  btnResponder.addEventListener('click', ()=>{
-    if(escolha===null){ canPlay(fxCerteza); return; }
-    confirmBox.classList.remove('hidden'); posBox.classList.add('hidden');
-    stopAllFx(); canPlay([fxCerteza,fxEstaCerto,fxQualResposta][idx % 3]);
-  });
-
-  btnConfirmar.addEventListener('click', async ()=>{
-    stopAllFx();
-    const ok=(escolha===perguntas[idx].certa);
-    const escolhas = elOps.querySelectorAll('.op');
-    escolhas.forEach((el,i)=>{
-      el.classList.remove('selected');
-      if(i===perguntas[idx].certa) el.classList.add('correct');
-      if(i===escolha && !ok) el.classList.add('wrong');
-    });
-
-    if(ok){
-      acertos++;
-      await Promise.all([playAndWait(fxCerta), showFx('ok')]);
-      const ganhoAtual = ladder[idx].toLocaleString('pt-BR');
-      posTitulo.textContent = `Acertou! Você já tem ${ganhoAtual} talento(s). Deseja PARAR agora ou CONTINUAR?`;
-      confirmBox.classList.add('hidden'); posBox.classList.remove('hidden');
-      btnParar.onclick = ()=> finalizar({parouDepois:true});
-      btnContinuar.onclick = ()=>{ idx++; (idx<perguntas.length) ? renderPergunta() : finalizar({}); canPlay(fxEntendeu); };
-    } else {
-      await Promise.all([playAndWait(fxErrou), showFx('wrong')]);
-      finalizar({errou:true});
-    }
-  });
-
-  function playAndWait(audio){
-    return new Promise(resolve=>{
-      try{
-        audio.currentTime=0;
-        const onEnd=()=>{ audio.removeEventListener('ended', onEnd); resolve(); };
-        audio.addEventListener('ended', onEnd);
-        audio.play().catch(()=>resolve());
-      }catch(e){ resolve(); }
-    });
+  function finalizar(){
+    secQuiz.classList.add("hidden");
+    secFinal.classList.remove("hidden");
+    finalTitulo.textContent="Fim do jogo";
+    finalMsg.textContent=`Você acertou ${acertos} de ${perguntas.length}`;
   }
-  function showFx(type){
-    return new Promise(resolve=>{
-      const cls = type === 'ok' ? 'fx-ok' : 'fx-wrong';
-      fxOverlay.classList.add(cls);
-      setTimeout(()=>{ fxOverlay.classList.remove(cls); resolve(); }, type === 'ok' ? 950 : 800);
-    });
-  }
-
-  btnPararAgora.addEventListener('click', ()=>{
-    if(!confirm('Deseja encerrar agora e ficar com o valor acumulado até aqui?')) return;
-    finalizar({parouAgora:true});
-  });
-
-  function acumuladoAtual(){ return acertos>0 ? ladder[acertos-1] : 0; }
-  function calculaCheckpoint(){
-    if (acertos===0) return 0;
-    if (acertos===perguntas.length) return ladder[ladder.length-1];
-    let premio=0;
-    for (let i=0;i<acertos;i++){ if(safeIdx.has(i)) premio=ladder[i]; }
-    return premio;
-  }
-
-  async function finalizar({parouAgora=false, parouDepois=false, errou=false}){
-    let tesouro=0;
-    if (parouAgora) tesouro = acumuladoAtual();
-    else if (parouDepois) tesouro = ladder[idx];
-    else if (errou) tesouro = calculaCheckpoint();
-    else tesouro = ladder[ladder.length-1];
-
-    // Grava simples no Supabase (tabela ranking) — nome opcional
-    try{
-      const payload = { nome: 'Convidado', fone: null, pontos: acertos, tesouro, quando: new Date().toISOString() };
-      const { error } = await sb.from('ranking').insert([payload]);
-      if(error) console.warn('Falha ao gravar ranking:', error.message);
-    }catch(e){ console.warn('Erro ao gravar ranking:', e); }
-
-    hideAll(); show(secFinal);
-    if(errou){
-      finalTitulo.textContent = 'Não foi dessa vez 😅';
-      finalMsg.textContent = `Você terminou com ${tesouro.toLocaleString('pt-BR')} talento(s) de sabedoria.`;
-    } else if(parouDepois || parouAgora){
-      finalTitulo.textContent = 'Você decidiu parar 👏';
-      finalMsg.textContent = `Parabéns! Você garantiu ${tesouro.toLocaleString('pt-BR')} talento(s) de sabedoria.`;
-    } else {
-      finalTitulo.textContent = 'Você concluiu todas as perguntas! 🏆';
-      finalMsg.textContent = `Pontuação máxima: ${tesouro.toLocaleString('pt-BR')} talento(s) de sabedoria.`;
-    }
-  }
-
 })();
 </script>
 </body>
 </html>
+
 
 
 
