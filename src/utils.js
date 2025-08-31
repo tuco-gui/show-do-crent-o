@@ -1,16 +1,37 @@
-export const ladder = [1000,2000,3000,4000,5000,10000,20000,30000,40000,60000,80000,100000,200000,300000,400000,500000,1000000];
-export const checkpoints = new Set([4,9,14]); // indexes 5,10,15 visually
+// Utilitários usados pelo main.js. Disponíveis em window.U.
 
-export const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
+(function () {
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
 
-export function shuffle(a){
-  const arr=[...a]; for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];}
-  return arr;
-}
+  const show = (el) => el.classList.remove("hidden");
+  const hide = (el) => el.classList.add("hidden");
+  const stop = (a) => { try { a.pause(); a.currentTime = 0; } catch {} };
+  const canPlay = (a) => { try { a.currentTime = 0; a.play().catch(()=>{}); } catch {} };
+  const stopAll = (arr) => arr.forEach(stop);
 
-export function pickN(arr, n){
-  const a=[...arr]; const out=[]; while(out.length<n && a.length) out.push(a.splice(Math.floor(Math.random()*a.length),1)[0]);
-  return out;
-}
+  function playAndWait(audio){
+    return new Promise(resolve=>{
+      try{
+        audio.currentTime=0;
+        const onEnd=()=>{ audio.removeEventListener('ended', onEnd); resolve(); };
+        audio.addEventListener('ended', onEnd);
+        audio.play().catch(()=>resolve());
+      }catch{ resolve(); }
+    });
+  }
 
-export function formatPrize(v){ return v.toLocaleString('pt-BR'); }
+  function showFx(type, overlay){
+    return new Promise(resolve=>{
+      const cls = type === 'ok' ? 'fx-ok' : 'fx-wrong';
+      overlay.classList.add(cls);
+      setTimeout(()=>{ overlay.classList.remove(cls); resolve(); }, type === 'ok' ? 950 : 800);
+    });
+  }
+
+  function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
+  function sampleSplice(arr){ return arr.splice(Math.floor(Math.random()*arr.length),1)[0]; }
+  function takeN(arr, n){ const out=[]; for(let i=0;i<n && arr.length;i++) out.push(sampleSplice(arr)); return out; }
+
+  window.U = { $, $$, show, hide, stop, canPlay, stopAll, playAndWait, showFx, shuffle, sampleSplice, takeN };
+})();
