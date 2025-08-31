@@ -159,7 +159,7 @@
         <button id="btnPararAgora" class="btn danger">Parar</button>
       </div>
 
-      <!-- Áudios (bem formados) -->
+      <!-- Áudios -->
       <audio id="fxCerteza"       src="audio/silvio-santos-voce-tem-certeza.mp3" preload="auto"></audio>
       <audio id="fxEntendeu"      src="audio/silvio-santos-voce-entendeu-a-pergunta.mp3" preload="auto"></audio>
       <audio id="fxEstaCerto"     src="audio/silvio-santos-esta-certo-disso.mp3" preload="auto"></audio>
@@ -182,7 +182,7 @@
 
   <div id="fxOverlay" aria-hidden="true"></div>
 
-  <!-- Supabase CDN (estático, ok para Vercel/Vite) -->
+  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -252,7 +252,7 @@
 
   // logos e capa
   (async function(){
-    const path='img/logosc.png'; if (await testaImagem(path)) crentaoLogo.src=path;
+    const path='img/logo.png'; if (await testaImagem(path)) crentaoLogo.src=path;
     const caps=['img/cover.png','img/cover.jpg','img/cover.webp','img/capa.png','img/capa.jpg','img/show-crentao-bg.png','img/show-crentao-bg.jpg'];
     for (const src of caps){ if (await testaImagem(src)){ heroImg.src=src; heroImg.classList.remove('hidden'); break; } }
   })();
@@ -294,8 +294,8 @@
   async function buscarPerguntas(){
     try{
       const { data, error } = await sb.from('perguntas')
-        .select('id,enunciado,a,b,c,d,correta,dificuldade,ativo')
-        .eq('ativo', true).limit(400);
+        .select('id,enunciado,a,b,c,d,correta,dificuldade')   // <- sem 'ativo'
+        .limit(400);
       if(error) throw error;
       const todas=(data||[]).map(normaliza).filter(q=> q.certa>=0 && q.opcoes.every(Boolean));
       return montarSequencia(todas);
@@ -310,7 +310,7 @@
     }
   }
 
-  function embaralhar(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
+  function embaralhar(a){ a=[...a]; for(let i=a.length-1;i>0;i++){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
   function pickFrom(arr){ return arr.splice(Math.floor(Math.random()*arr.length),1)[0]; }
   function takeN(poolArr, n){ const out=[]; for(let i=0;i<n && poolArr.length;i++){ out.push(pickFrom(poolArr)); } return out; }
 
@@ -522,6 +522,7 @@
 </script>
 </body>
 </html>
+
 
 
 
