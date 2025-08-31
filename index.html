@@ -5,136 +5,91 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Show do Crentão</title>
   <meta name="theme-color" content="#000000" />
-  <style>
-    /* estilos iguais ao seu último */
-    body{margin:0;background:#000;color:#fff;font-family:sans-serif}
-    .hidden{display:none}
-    header{padding:10px;color:#fff;font-weight:bold}
-    .btn{padding:14px 22px;margin:8px;font-weight:bold;border:none;border-radius:12px;cursor:pointer}
-    .btn.primary{background:#19c37d;color:#000}
-    .btn.secondary{background:#fff;color:#000}
-    .btn.danger{background:#e5484d;color:#fff}
-    #hero{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}
-    #section-quiz{padding:20px}
-    .op{margin:6px;padding:12px;border:1px solid #666;border-radius:8px;cursor:pointer}
-    .op.selected{background:#163f32}
-    .op.correct{background:#0e2f24}
-    .op.wrong{background:#2a1212}
-  </style>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
+  <header class="topbar">
+    <img src="img/logo.png" alt="Sobrenatural" class="brand" onerror="this.style.display='none'">
+    <img src="img/cover.png" alt="Show do Crentão" class="brand-right" onerror="this.style.display='none'">
+  </header>
 
-<header>
-  Show do Crentão
-</header>
-
-<!-- HOME -->
-<section id="hero">
-  <div class="cta">
-    <button id="btnStart" class="btn primary">Iniciar</button>
-    <button id="btnRanking" class="btn secondary">Ranking</button>
-  </div>
-</section>
-
-<main>
-  <!-- QUIZ -->
-  <section id="section-quiz" class="hidden">
-    <h2 id="quizPergunta">Pergunta</h2>
-    <div id="quizOpcoes"></div>
-    <div class="row">
-      <button id="btnResponder" class="btn primary">Enviar</button>
-      <button id="btnPararAgora" class="btn danger">Parar</button>
+  <!-- HOME -->
+  <section id="hero" class="hero">
+    <div class="hero-bg">
+      <img id="heroImg" src="img/cover.png" alt="Capa" />
+    </div>
+    <div class="cta">
+      <button id="btnStart" class="btn primary full">Iniciar</button>
+      <a id="btnRanking" class="btn secondary full" href="ranking.html">Ranking</a>
     </div>
   </section>
 
-  <!-- FINAL -->
-  <section id="section-final" class="hidden">
-    <h2 id="finalTitulo">Fim do jogo</h2>
-    <p id="finalMsg"></p>
-    <button id="btnJogarNovamente" class="btn primary">Jogar novamente</button>
-  </section>
-</main>
+  <main class="container">
+    <!-- QUIZ -->
+    <section id="section-quiz" class="card hidden">
+      <h2 id="quizPergunta" class="title">Pergunta</h2>
+      <p class="sub"><span id="valorPergunta"></span></p>
 
-<!-- Supabase CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+      <div id="quizOpcoes" class="opcoes"></div>
 
-<script>
-(function(){
-  /* 🔑 FIX: usar valores diretos, não import.meta */
-  const SUPABASE_URL = "https://ihajmegcdgwchxslnaep.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloYWptZWdjZGd3Y2h4c2xuYWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0OTQzMTgsImV4cCI6MjA3MjA3MDMxOH0.WM36lA9n0PU9qd-DKdrWVB_UzGVXpsfJ984oHiXDU8Y";
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      <div id="lifelineRow" class="lifelines">
+        <button id="btnUni" class="chip"><span>🎓</span> Universitários</button>
+        <button id="btnCartas" class="chip"><span>🂠</span> Cartas</button>
+        <button id="btnAssistente" class="chip"><span>💬</span> Assistente</button>
+        <button id="btnPular" class="chip"><span>🏃</span> Pular</button>
+      </div>
 
-  const hero=document.getElementById("hero");
-  const secQuiz=document.getElementById("section-quiz");
-  const secFinal=document.getElementById("section-final");
+      <div id="ajudaBox" class="help hidden"></div>
 
-  const btnStart=document.getElementById("btnStart");
-  const btnRanking=document.getElementById("btnRanking");
-  const btnResponder=document.getElementById("btnResponder");
-  const btnPararAgora=document.getElementById("btnPararAgora");
-  const btnJogarNovamente=document.getElementById("btnJogarNovamente");
+      <div id="confirmBox" class="confirm hidden">
+        <div class="confirm-title">Você tem certeza da resposta?</div>
+        <div class="row">
+          <button id="btnConfirmar" class="btn primary">Sim, confirmar</button>
+        </div>
+      </div>
 
-  const elPerg=document.getElementById("quizPergunta");
-  const elOps=document.getElementById("quizOpcoes");
-  const finalTitulo=document.getElementById("finalTitulo");
-  const finalMsg=document.getElementById("finalMsg");
+      <div id="posAcertoBox" class="confirm hidden">
+        <div class="confirm-title" id="posAcertoTitulo"></div>
+        <div class="row">
+          <button id="btnParar" class="btn danger ghost">Parar</button>
+          <button id="btnContinuar" class="btn primary">Continuar</button>
+        </div>
+      </div>
 
-  let perguntas=[
-    {enunciado:"Quem construiu a arca?",opcoes:["Moisés","Noé","Paulo","Pedro"],certa:1},
-    {enunciado:"Quem é o Salvador?",opcoes:["Davi","Jesus","Abraão","João"],certa:1}
-  ];
-  let idx=0, escolha=null, acertos=0;
+      <div class="row">
+        <button id="btnResponder" class="btn primary">Enviar</button>
+        <button id="btnPararAgora" class="btn danger">Parar</button>
+      </div>
 
-  function renderPergunta(){
-    const p=perguntas[idx];
-    elPerg.textContent=p.enunciado;
-    elOps.innerHTML="";
-    escolha=null;
-    p.opcoes.forEach((txt,i)=>{
-      const div=document.createElement("div");
-      div.className="op";
-      div.textContent=txt;
-      div.onclick=()=>{
-        escolha=i;
-        elOps.querySelectorAll(".op").forEach(o=>o.classList.remove("selected"));
-        div.classList.add("selected");
-      };
-      elOps.appendChild(div);
-    });
-  }
+      <!-- Áudios -->
+      <audio id="fxCerteza"       src="audio/silvio-santos-voce-tem-certeza.mp3" preload="auto"></audio>
+      <audio id="fxEntendeu"      src="audio/silvio-santos-voce-entendeu-a-pergunta.mp3" preload="auto"></audio>
+      <audio id="fxEstaCerto"     src="audio/silvio-santos-esta-certo-disso.mp3" preload="auto"></audio>
+      <audio id="fxQualResposta"  src="audio/silvio-santos-qual-e-a-resposta-certa.mp3" preload="auto"></audio>
+      <audio id="fxCertaResposta" src="audio/silvio-santos-certa-resposta.mp3" preload="auto"></audio>
+      <audio id="fxErro"          src="audio/faustao-errou.mp3" preload="auto"></audio>
+      <audio id="fxAbertura"      src="audio/silvio-santos-abertura-show-do-milhao.mp3" preload="auto" loop></audio>
+    </section>
 
-  btnStart.onclick=()=>{
-    hero.classList.add("hidden");
-    secQuiz.classList.remove("hidden");
-    renderPergunta();
-  };
+    <!-- FINAL -->
+    <section id="section-final" class="card hidden">
+      <h2 class="final-title" id="finalTitulo">Fim do jogo</h2>
+      <p class="final-msg" id="finalMsg"></p>
+      <div class="row">
+        <button id="btnJogarNovamente" class="btn primary">Jogar novamente</button>
+        <a class="btn secondary" href="ranking.html">Ver ranking</a>
+      </div>
+    </section>
+  </main>
 
-  btnRanking.onclick=()=>alert("Ranking em construção...");
-  btnResponder.onclick=()=>{
-    if(escolha===null){alert("Selecione uma opção");return;}
-    const correta=perguntas[idx].certa;
-    elOps.querySelectorAll(".op").forEach((el,i)=>{
-      if(i===correta) el.classList.add("correct");
-      if(i===escolha && i!==correta) el.classList.add("wrong");
-    });
-    if(escolha===correta){acertos++; idx++; if(idx<perguntas.length) setTimeout(renderPergunta,800); else finalizar();}
-    else finalizar();
-  };
+  <div id="fxOverlay" aria-hidden="true"></div>
 
-  btnPararAgora.onclick=()=>finalizar();
-  btnJogarNovamente.onclick=()=>{idx=0;acertos=0;secFinal.classList.add("hidden");hero.classList.remove("hidden");};
-
-  function finalizar(){
-    secQuiz.classList.add("hidden");
-    secFinal.classList.remove("hidden");
-    finalTitulo.textContent="Fim do jogo";
-    finalMsg.textContent=`Você acertou ${acertos} de ${perguntas.length}`;
-  }
-})();
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="src/app.js"></script>
 </body>
 </html>
+
 
 
 
