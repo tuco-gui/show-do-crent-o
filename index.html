@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Crentão Pro</title>
+  <style>
+    :root{--pad:clamp(16px,3vw,28px);--rad:14px;--shadow:0 12px 40px rgba(0,0,0,.35);--green:#ffd44d;--blue:#143e7a}
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:#0a2a57;color:#fff;font-family:system-ui,Segoe UI,Roboto}
+    header{padding:14px var(--pad);font-weight:800}
+    .container{max-width:980px;margin:0 auto;padding:24px var(--pad)}
+    .card{background:#0e2860;border:1px solid rgba(255,255,255,.08);border-radius:var(--rad);box-shadow:var(--shadow);padding:24px}
+    h1,h2{margin:0 0 10px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{appearance:none;border:0;border-radius:14px;padding:14px 20px;font-weight:800;cursor:pointer}
+    .btn.primary{background:linear-gradient(180deg,#ffd76a,#f0b400);color:#2a2100}
+    .btn.secondary{background:#fff;color:#0a0d0c}
+    .hidden{display:none}
+    label{display:block;margin:10px 0 6px}
+    input[type=text],input[type=tel]{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:#0b2a55;color:#fff}
+    .ops label{display:flex;gap:10px;align-items:center;margin:8px 0}
+    .muted{color:#bcd}
+    .confirm,.postwin{margin-top:12px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.15)}
+  </style>
+</head>
+<body>
+  <header>Crentão Pro</header>
+  <div class="container">
+    <div id="home" class="card">
+      <h1>O maior quiz show ✨</h1>
+      <p class="muted">Responda 17 perguntas e entre no ranking!</p>
+      <div class="row">
+        <button id="start" class="btn primary">Começar Quiz</button>
+        <a class="btn secondary" href="ranking.html">Ver Ranking</a>
+      </div>
+    </div>
+
+    <div id="form" class="card hidden">
+      <h2>Dados do participante</h2>
+      <label>Nome completo</label>
+      <input id="nome" type="text" placeholder="Ex.: Maria Silva" />
+      <label>Telefone (com DDD)</label>
+      <input id="fone" type="tel" placeholder="Ex.: (14) 99999-0000" />
+      <div class="row" style="margin-top:10px">
+        <button id="go" class="btn primary">Continuar</button>
+        <button id="cancel" class="btn secondary">Cancelar</button>
+      </div>
+    </div>
+
+    <div id="play" class="card hidden" aria-live="polite">
+      <h2 id="enunciado">Pergunta</h2>
+      <p id="valor" class="muted"></p>
+      <div id="lifelines" class="row" style="margin:8px 0 10px">
+        <button id="uni" class="btn secondary">Universitários</button>
+        <button id="fifty" class="btn secondary">50/50</button>
+        <button id="skip" class="btn secondary">Pular</button>
+      </div>
+      <div id="ajuda" class="muted hidden"></div>
+      <div id="ops" class="ops"></div>
+      <div id="confirm" class="confirm hidden">
+        <strong>Tem certeza?</strong>
+        <div class="row"><button id="lock" class="btn primary">Travar resposta</button></div>
+      </div>
+      <div id="postwin" class="postwin hidden">
+        <strong id="postwinTitle"></strong>
+        <div class="row"><button id="stop" class="btn secondary">Parar</button><button id="cont" class="btn primary">Continuar</button></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="send" class="btn primary">Enviar</button>
+        <button id="clear" class="btn secondary">Limpar</button>
+      </div>
+    </div>
+
+    <div id="final" class="card hidden">
+      <h2 id="finalTitle">Fim do jogo</h2>
+      <p id="finalMsg" class="muted"></p>
+      <div class="row">
+        <a class="btn primary" href="/">Jogar novamente</a>
+        <a class="btn secondary" href="ranking.html">Ver ranking</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

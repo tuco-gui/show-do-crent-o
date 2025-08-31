@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ranking — Crentão Pro</title>
+  <style>
+    :root{--pad:clamp(16px,3vw,28px);--rad:14px;--shadow:0 12px 40px rgba(0,0,0,.35)}
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:#0a2a57;color:#fff;font-family:system-ui,Segoe UI,Roboto}
+    .container{max-width:900px;margin:0 auto;padding:24px var(--pad)}
+    .card{background:#0e2860;border:1px solid rgba(255,255,255,.08);border-radius:var(--rad);box-shadow:var(--shadow);padding:22px}
+    .item{display:grid;grid-template-columns:64px 1fr 140px 120px;gap:12px;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);padding:12px 0}
+    .pos{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:#112b66;font-weight:800}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Ranking</h1>
+      <div id="list"></div>
+      <div style="margin-top:12px"><a href="/" class="btn">Voltar</a></div>
+    </div>
+  </div>
+  <script type="module" src="/src/ranking.js"></script>
+</body>
+</html>

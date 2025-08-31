@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — Crentão Pro</title>
+  <style>
+    :root{--pad:clamp(16px,3vw,28px);--rad:14px;--shadow:0 12px 40px rgba(0,0,0,.35)}
+    *{box-sizing:border-box} html,body{height:100%;margin:0;background:#0a2a57;color:#fff;font-family:system-ui,Segoe UI,Roboto}
+    .container{max-width:900px;margin:0 auto;padding:24px var(--pad)}
+    .card{background:#0e2860;border:1px solid rgba(255,255,255,.08);border-radius:var(--rad);box-shadow:var(--shadow);padding:22px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+    .btn.primary{background:linear-gradient(180deg,#ffd76a,#f0b400);color:#2a2100}
+    .btn.secondary{background:#fff;color:#0a0d0c}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,.1);text-align:left}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Admin — Ranking</h1>
+      <div class="row">
+        <button id="csv" class="btn secondary">Export CSV</button>
+        <button id="wipe" class="btn primary">Reset ranking</button>
+        <a href="/" class="btn secondary">Home</a>
+      </div>
+      <div id="msg" style="margin-top:8px;opacity:.8"></div>
+      <table>
+        <thead><tr><th>#</th><th>Nome</th><th>Fone</th><th>Tesouro</th><th>Pontos</th><th>Quando</th></tr></thead>
+        <tbody id="tbody"><tr><td colspan="6" style="opacity:.8">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <script type="module" src="/src/admin.js"></script>
+</body>
+</html>
